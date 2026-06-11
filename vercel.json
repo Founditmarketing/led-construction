@@ -9,15 +9,21 @@
       ]
     },
     {
-      "source": "/(wp-content|wp-includes)/(.*)",
+      "source": "/((?!api/|wp-content/|wp-includes/).*\\.html)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=3600, stale-while-revalidate=86400" }
+        { "key": "Cache-Control", "value": "no-cache, must-revalidate" }
       ]
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api/|wp-content/|wp-includes/).*)",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/(wp-content|wp-includes)/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     }
   ]
