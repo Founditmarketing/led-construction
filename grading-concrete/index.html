@@ -671,7 +671,7 @@ setup_collapsible_submenus();
 				<div class="et-pb-contact-message"></div>
 				
 				<div class="et_pb_contact">
-					<form class="et_pb_contact_form clearfix" method="post" action="https://ledconstructionllc.com/grading-concrete/">
+					<form class="et_pb_contact_form clearfix" method="post" action="/api/contact">
 						<p class="et_pb_contact_field et_pb_contact_field_0_tb_footer et_pb_contact_field_half" data-id="name" data-type="input">
 				
 				
@@ -789,7 +789,79 @@ var et_pb_sticky_elements = {"et_pb_menu_0_tb_header":{"id":"et_pb_menu_0_tb_hea
 </script>
 <script id="et-builder-modules-script-sticky-js" src="../wp-content/themes/Divi/includes/builder/feature/dynamic-assets/assets/js/sticky-elements41c1.js?ver=4.27.4"></script>
 	
-	</body>
+	<!-- led-contact-form-handler:start -->
+<script>
+(function () {
+  var form = document.querySelector('form.et_pb_contact_form');
+  if (!form) return;
+  form.setAttribute('id', 'led-contact-form');
+  form.setAttribute('action', '/api/contact');
+
+  // Disarm Divi's delegated submit/click handlers so they don't intercept
+  if (window.jQuery) {
+    try {
+      window.jQuery(document).off('submit', '.et_pb_contact_form');
+      window.jQuery(document).off('submit', 'form.et_pb_contact_form');
+      window.jQuery(document).off('click', '.et_pb_contact_submit');
+      window.jQuery(form).off('submit');
+      window.jQuery(form).find('.et_pb_contact_submit').off('click');
+    } catch (e) {}
+  }
+
+  var msgBox = form.parentNode.querySelector('.et-pb-contact-message')
+            || document.querySelector('.et-pb-contact-message');
+
+  function show(text, isError) {
+    if (msgBox) {
+      msgBox.innerHTML = '<p style="color:' + (isError ? '#c00' : '#2a7') + ';font-weight:600;">' + text + '</p>';
+      msgBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      alert(text);
+    }
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    var name = (form.querySelector('[data-original_id="name"]') || {}).value || '';
+    var email = (form.querySelector('[data-original_id="email"]') || {}).value || '';
+    var phone = (form.querySelector('[data-original_id="phone"]') || {}).value || '';
+    var message = (form.querySelector('[data-original_id="message"]') || {}).value || '';
+
+    if (!name.trim() || !email.trim() || !message.trim()) {
+      show('Please fill in your name, email, and message.', true);
+      return;
+    }
+
+    var btn = form.querySelector('button[type="submit"]');
+    var originalText = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
+
+    fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, email: email, phone: phone, message: message })
+    })
+      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+      .then(function (result) {
+        if (result.ok) {
+          show('Thanks! Your message has been sent. We will be in touch soon.', false);
+          form.reset();
+        } else {
+          show((result.data && result.data.error) || 'Sorry, something went wrong. Please try again.', true);
+        }
+      })
+      .catch(function () { show('Network error. Please try again.', true); })
+      .then(function () {
+        if (btn) { btn.disabled = false; btn.textContent = originalText; }
+      });
+  }, true); // capture phase, fires before bubble-phase handlers
+})();
+</script>
+
+<!-- led-contact-form-handler:end -->
+</body>
 
 <!-- Mirrored from ledconstructionllc.com/grading-concrete/ by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 11 Jun 2026 16:42:15 GMT -->
 </html>

@@ -548,16 +548,32 @@ var et_pb_sticky_elements = {"et_pb_menu_0_tb_header":{"id":"et_pb_menu_0_tb_hea
 //# sourceURL=et-builder-modules-script-sticky-js-extra
 </script>
 <script id="et-builder-modules-script-sticky-js" src="../wp-content/themes/Divi/includes/builder/feature/dynamic-assets/assets/js/sticky-elements41c1.js?ver=4.27.4"></script>
-	
-	<script>
+<!-- led-contact-form-handler:start -->
+<script>
 (function () {
-  var form = document.getElementById('led-contact-form');
+  var form = document.querySelector('form.et_pb_contact_form');
   if (!form) return;
-  var msgBox = document.querySelector('.et-pb-contact-message');
+  form.setAttribute('id', 'led-contact-form');
+  form.setAttribute('action', '/api/contact');
+
+  // Disarm Divi's delegated submit/click handlers so they don't intercept
+  if (window.jQuery) {
+    try {
+      window.jQuery(document).off('submit', '.et_pb_contact_form');
+      window.jQuery(document).off('submit', 'form.et_pb_contact_form');
+      window.jQuery(document).off('click', '.et_pb_contact_submit');
+      window.jQuery(form).off('submit');
+      window.jQuery(form).find('.et_pb_contact_submit').off('click');
+    } catch (e) {}
+  }
+
+  var msgBox = form.parentNode.querySelector('.et-pb-contact-message')
+            || document.querySelector('.et-pb-contact-message');
 
   function show(text, isError) {
     if (msgBox) {
       msgBox.innerHTML = '<p style="color:' + (isError ? '#c00' : '#2a7') + ';font-weight:600;">' + text + '</p>';
+      msgBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
       alert(text);
     }
@@ -565,6 +581,7 @@ var et_pb_sticky_elements = {"et_pb_menu_0_tb_header":{"id":"et_pb_menu_0_tb_hea
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
+    e.stopImmediatePropagation();
 
     var name = (form.querySelector('[data-original_id="name"]') || {}).value || '';
     var email = (form.querySelector('[data-original_id="email"]') || {}).value || '';
@@ -594,16 +611,16 @@ var et_pb_sticky_elements = {"et_pb_menu_0_tb_header":{"id":"et_pb_menu_0_tb_hea
           show((result.data && result.data.error) || 'Sorry, something went wrong. Please try again.', true);
         }
       })
-      .catch(function () {
-        show('Network error. Please try again.', true);
-      })
+      .catch(function () { show('Network error. Please try again.', true); })
       .then(function () {
         if (btn) { btn.disabled = false; btn.textContent = originalText; }
       });
-  });
+  }, true); // capture phase, fires before bubble-phase handlers
 })();
 </script>
-	</body>
+
+<!-- led-contact-form-handler:end -->
+</body>
 
 <!-- Mirrored from ledconstructionllc.com/contact-us/ by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 11 Jun 2026 16:43:30 GMT -->
 </html>
