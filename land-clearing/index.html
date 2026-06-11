@@ -808,7 +808,6 @@ var et_pb_sticky_elements = {"et_pb_menu_0_tb_header":{"id":"et_pb_menu_0_tb_hea
   form.setAttribute('id', 'led-contact-form');
   form.setAttribute('action', '/api/contact');
 
-  // Disarm Divi's delegated submit/click handlers so they don't intercept
   if (window.jQuery) {
     try {
       window.jQuery(document).off('submit', '.et_pb_contact_form');
@@ -819,16 +818,19 @@ var et_pb_sticky_elements = {"et_pb_menu_0_tb_header":{"id":"et_pb_menu_0_tb_hea
     } catch (e) {}
   }
 
-  var msgBox = form.parentNode.querySelector('.et-pb-contact-message')
-            || document.querySelector('.et-pb-contact-message');
+  // Build a high-contrast message box we control, so it can't blend into the page background.
+  var msgBox = document.createElement('div');
+  msgBox.id = 'led-contact-result';
+  msgBox.style.cssText = 'display:none;margin:20px 0;padding:16px 20px;border-radius:8px;font-size:16px;font-weight:600;line-height:1.5;text-align:center;';
+  form.parentNode.insertBefore(msgBox, form);
 
   function show(text, isError) {
-    if (msgBox) {
-      msgBox.innerHTML = '<p style="color:' + (isError ? '#c00' : '#2a7') + ';font-weight:600;">' + text + '</p>';
-      msgBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else {
-      alert(text);
-    }
+    msgBox.textContent = text;
+    msgBox.style.display = 'block';
+    msgBox.style.background = isError ? '#ffe0e0' : '#e6f9ef';
+    msgBox.style.color = isError ? '#8a1f1f' : '#15633a';
+    msgBox.style.border = '2px solid ' + (isError ? '#c0392b' : '#2a7a4f');
+    msgBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   form.addEventListener('submit', function (e) {
@@ -854,20 +856,25 @@ var et_pb_sticky_elements = {"et_pb_menu_0_tb_header":{"id":"et_pb_menu_0_tb_hea
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: name, email: email, phone: phone, message: message })
     })
-      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }).catch(function () { return { ok: r.ok, data: {} }; }); })
       .then(function (result) {
         if (result.ok) {
           show('Thanks! Your message has been sent. We will be in touch soon.', false);
           form.reset();
         } else {
-          show((result.data && result.data.error) || 'Sorry, something went wrong. Please try again.', true);
+          show((result.data && result.data.error) || ('Sorry, something went wrong (HTTP ' + (result.status || '?') + ').'), true);
         }
       })
       .catch(function () { show('Network error. Please try again.', true); })
       .then(function () {
         if (btn) { btn.disabled = false; btn.textContent = originalText; }
+        // In case Divi tried to hide the form, force it back.
+        form.style.display = '';
+        form.classList.remove('et_pb_contact_form_hidden');
+        var container = form.closest('.et_pb_contact');
+        if (container) container.style.display = '';
       });
-  }, true); // capture phase, fires before bubble-phase handlers
+  }, true);
 })();
 </script>
 
