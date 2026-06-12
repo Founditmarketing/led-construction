@@ -59,7 +59,7 @@ ${message}
       },
       body: JSON.stringify({
         from: 'LED Construction Website <contact@ledconstructionllc.com>',
-        to: ['0nleiter@gmail.com'],
+        to: ['ledconstruction@gmail.com'],
         reply_to: email,
         subject: `New contact form submission from ${name}`,
         html,
