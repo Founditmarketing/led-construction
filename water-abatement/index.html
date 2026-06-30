@@ -674,7 +674,7 @@ setup_collapsible_submenus();
 				<div class="et-pb-contact-message"></div>
 				
 				<div class="et_pb_contact">
-					<form class="et_pb_contact_form clearfix" method="post" action="/api/contact">
+					<form class="et_pb_contact_form clearfix" method="post" action="">
 						<p class="et_pb_contact_field et_pb_contact_field_0_tb_footer et_pb_contact_field_half" data-id="name" data-type="input">
 				
 				
@@ -786,129 +786,6 @@ var et_pb_sticky_elements = {"et_pb_menu_0_tb_header":{"id":"et_pb_menu_0_tb_hea
 </script>
 <script id="et-builder-modules-script-sticky-js" src="../wp-content/themes/Divi/includes/builder/feature/dynamic-assets/assets/js/sticky-elements41c1.js?ver=4.27.4"></script>
 	
-	<!-- led-contact-form-handler:start -->
-<script>
-(function () {
-  function init() {
-    var form = document.querySelector('form.et_pb_contact_form');
-    if (!form) return;
-    if (form.dataset.ledHandled === '1') return;
-    form.dataset.ledHandled = '1';
-
-    form.setAttribute('id', 'led-contact-form');
-    form.setAttribute('action', '/api/contact');
-    form.setAttribute('novalidate', 'novalidate');
-
-    // Strip nonce + WP marker inputs so any leftover Divi handler can't recognize/submit it.
-    form.querySelectorAll('input[name="et_pb_contactform_submit_0"], input[name^="_wpnonce"], input[name="_wp_http_referer"]').forEach(function (n) { n.remove(); });
-
-    // Disarm any jQuery handlers Divi attached
-    if (window.jQuery) {
-      try {
-        var $ = window.jQuery;
-        $(document).off('submit', '.et_pb_contact_form');
-        $(document).off('submit', 'form.et_pb_contact_form');
-        $(document).off('click', '.et_pb_contact_submit');
-        $(form).off();
-        $(form).find('*').off();
-      } catch (e) {}
-    }
-
-    // Replace the form with a clone to nuke any native event listeners bound to it
-    var fresh = form.cloneNode(true);
-    form.parentNode.replaceChild(fresh, form);
-    form = fresh;
-
-    // Convert submit button to a plain button so no native submit fires
-    var btn = form.querySelector('.et_pb_contact_submit') || form.querySelector('button[type="submit"]');
-    if (btn) {
-      btn.setAttribute('type', 'button');
-      btn.removeAttribute('name');
-    }
-
-    // Build a high-contrast result box we control
-    var msgBox = document.createElement('div');
-    msgBox.id = 'led-contact-result';
-    msgBox.style.cssText = 'display:none;margin:20px 0;padding:16px 20px;border-radius:8px;font-size:16px;font-weight:600;line-height:1.5;text-align:center;';
-    form.parentNode.insertBefore(msgBox, form);
-
-    function show(text, isError) {
-      msgBox.textContent = text;
-      msgBox.style.display = 'block';
-      msgBox.style.background = isError ? '#ffe0e0' : '#e6f9ef';
-      msgBox.style.color = isError ? '#8a1f1f' : '#15633a';
-      msgBox.style.border = '2px solid ' + (isError ? '#c0392b' : '#2a7a4f');
-      msgBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    function ensureFormVisible() {
-      form.style.display = '';
-      form.classList.remove('et_pb_contact_form_hidden');
-      var container = form.closest('.et_pb_contact');
-      if (container) container.style.display = '';
-    }
-
-    function submitForm() {
-      ensureFormVisible();
-
-      var name = (form.querySelector('[data-original_id="name"]') || {}).value || '';
-      var email = (form.querySelector('[data-original_id="email"]') || {}).value || '';
-      var phone = (form.querySelector('[data-original_id="phone"]') || {}).value || '';
-      var message = (form.querySelector('[data-original_id="message"]') || {}).value || '';
-
-      if (!name.trim() || !email.trim() || !message.trim()) {
-        show('Please fill in your name, email, and message.', true);
-        return;
-      }
-
-      var btnLive = form.querySelector('.et_pb_contact_submit');
-      var originalText = btnLive ? btnLive.textContent : '';
-      if (btnLive) { btnLive.disabled = true; btnLive.textContent = 'Sending...'; }
-
-      fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name, email: email, phone: phone, message: message })
-      })
-        .then(function (r) {
-          return r.json()
-            .then(function (data) { return { ok: r.ok, status: r.status, data: data }; })
-            .catch(function () { return { ok: r.ok, status: r.status, data: {} }; });
-        })
-        .then(function (result) {
-          if (result.ok) {
-            show('Thanks! Your message has been sent. We will be in touch soon.', false);
-            form.reset();
-          } else {
-            show((result.data && result.data.error) || ('Sorry, something went wrong (HTTP ' + result.status + ').'), true);
-          }
-        })
-        .catch(function () { show('Network error. Please try again.', true); })
-        .then(function () {
-          if (btnLive) { btnLive.disabled = false; btnLive.textContent = originalText; }
-          ensureFormVisible();
-        });
-    }
-
-    if (btn) btn.addEventListener('click', function (e) { e.preventDefault(); e.stopImmediatePropagation(); submitForm(); });
-
-    // Belt-and-suspenders: any submit event on the form is blocked
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      submitForm();
-    }, true);
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-})();
-</script>
-
-<!-- led-contact-form-handler:end -->
 </body>
 
 <!-- Mirrored from ledconstructionllc.com/water-abatement/ by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 11 Jun 2026 16:41:50 GMT -->
